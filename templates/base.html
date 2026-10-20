@@ -1,0 +1,64 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}FinalReady · A little every day{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'study/app.css' %}?v=lecture-actions-2">
+    </head>
+    <body>
+        <aside class="sidebar">
+            <a class="brand" href="{% url 'dashboard' %}">
+                <span class="brand-icon">F</span>
+                FinalReady<span class="dot">.</span>
+            </a>
+
+            <div class="eyebrow">YOUR STUDY SPACE</div>
+
+            <nav>
+                <a href="{% url 'dashboard' %}">◫ &nbsp; Overview</a>
+                <a href="{% url 'course_create' %}">＋ &nbsp; New course</a>
+            </nav>
+
+            <div class="sidebar-note">
+                <span class="spark">✳</span>
+                <h3>Small steps.<br>Ready for anything.</h3>
+                <p>Your next final starts with today's ten minutes.</p>
+            </div>
+
+            {% if user.is_authenticated %}
+                <div class="profile">
+                    <strong>{{ user.username }}</strong>
+                    <span>Student workspace</span>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="text-button">Sign out</button>
+                    </form>
+                </div>
+            {% endif %}
+        </aside>
+
+        <div class="workspace">
+            <header>
+                <span>Less cramming. More confidence.</span>
+                <span>{% now 'l, j F' %}</span>
+            </header>
+
+            <main>
+                {% for message in messages %}
+                    <div class="notice {{ message.tags }}" role="status">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer>
+                FinalReady
+                <span>Prepare for finals, one day at a time.</span>
+            </footer>
+        </div>
+    </body>
+</html>

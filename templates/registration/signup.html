@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="auth">
+        <div class="eyebrow">START A BETTER STUDY HABIT</div>
+
+        <h1>
+            Be ready.<br>
+            A little every day.
+        </h1>
+
+        <section class="panel">
+            <h2>Create your account</h2>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="button">Create account →</button>
+            </form>
+
+            <p>
+                Already registered?
+                <a href="{% url 'login' %}">Sign in</a>
+            </p>
+        </section>
+    </div>
+{% endblock %}

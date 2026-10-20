@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a class="back" href="{% url 'course_detail' session.course_id %}">
+        ← {{ session.course.name }}
+    </a>
+
+    <div class="eyebrow">{{ session.get_kind_display }}</div>
+
+    {% if session.completed_at %}
+        <h1>One session closer.</h1>
+        <p class="muted">
+            You scored {{ session.score }}%.
+            Review the explanations, then come back for your next session.
+        </p>
+    {% else %}
+        <h1>A little focus goes a long way.</h1>
+        <p class="muted">
+            {{ items|length }} questions ·
+            About {{ items|length }} minutes ·
+            Take your time.
+        </p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for item in items %}
+            <fieldset class="panel question">
+                <legend>
+                    Question {{ forloop.counter }} · {{ item.question.topic.name }}
+                </legend>
+                <h2>{{ item.question.prompt }}</h2>
+
+                {% for option in item.options %}
+                    {% if session.completed_at %}
+                        <div class="option {% if option.correct %}correct{% elif option.chosen %}incorrect{% endif %}">
+                            {{ option.text }}
+
+                            {% if option.correct %}
+                                <strong> · Correct answer</strong>
+                            {% endif %}
+
+                            {% if option.chosen %}
+                                <span> · Your answer</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <label class="option">
+                            <input
+                                type="radio"
+                                name="question_{{ item.pk }}"
+                                value="{{ option.index }}"
+                                required
+                            >
+                            <span>{{ option.text }}</span>
+                        </label>
+                    {% endif %}
+                {% endfor %}
+
+                {% if session.completed_at %}
+                    <div class="explanation">
+                        <strong>Why this answer?</strong>
+                        <p>{{ item.question.explanation }}</p>
+                    </div>
+                {% endif %}
+            </fieldset>
+        {% endfor %}
+
+        {% if not session.completed_at %}
+            <button class="button">Finish session & see results →</button>
+        {% else %}
+            <a class="button" href="{% url 'course_detail' session.course_id %}">
+                Back to course →
+            </a>
+        {% endif %}
+    </form>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a class="back" href="{% url 'course_detail' lecture.course_id %}">← Back to course</a>
+    <div class="heading">
+        <div>
+            <div class="eyebrow">AI STUDY GUIDE</div>
+            <h1>{{ lecture.title }}</h1>
+            <p class="muted">A concise overview and explanations of the lecture's main topics</p>
+        </div>
+        <a class="button secondary" href="{% url 'lecture_open' lecture.pk %}" download>
+            Download lecture
+        </a>
+    </div>
+
+    {% if summary %}
+        <section class="panel summary-section">
+            <h2>Overview</h2>
+            <div>{{ summary.overview|linebreaks }}</div>
+        </section>
+
+        <section class="panel summary-section">
+            <h2>Key concepts and explanations</h2>
+            {% for concept in summary.concepts %}
+                <article class="summary-concept">
+                    <h3>{{ concept.name }}</h3>
+                    <div>{{ concept.explanation|linebreaks }}</div>
+                </article>
+            {% endfor %}
+        </section>
+
+        <section class="panel summary-section">
+            <h2>What to know and remember</h2>
+            <ul class="summary-takeaways">
+                {% for takeaway in summary.key_takeaways %}
+                    <li>{{ takeaway }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        <p class="muted fine">AI-generated summary. Check definitions and formulas against the original lecture.</p>
+    {% else %}
+        <section class="panel">
+            <h2>Your summary is not ready yet</h2>
+            <p class="muted">Create a summary for this lecture, or retry after an error.</p>
+            <form method="post" action="{% url 'summary_generate' lecture.pk %}" id="summary-generate">
+                {% csrf_token %}
+                <button class="button">Create summary</button>
+                <p class="muted fine">The lecture text will be sent to OpenAI.</p>
+            </form>
+        </section>
+        <script>
+            document.getElementById('summary-generate').addEventListener('submit', function () {
+                const button = this.querySelector('button');
+                button.disabled = true;
+                button.textContent = 'Creating summary…';
+            });
+        </script>
+    {% endif %}
+{% endblock %}

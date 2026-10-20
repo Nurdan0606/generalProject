@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a class="back" href="{% url 'dashboard' %}">← Overview</a>
+
+    <h1>{{ title }}</h1>
+    <p class="muted">{{ subtitle }}</p>
+
+    <section class="panel form-panel">
+        <form method="post" enctype="multipart/form-data" {% if upload %}id="lecture-upload"{% endif %}>
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            {% if upload %}
+                <p class="muted">
+                    Your file is saved so you can open it later. Uploading sends the extracted
+                    text to OpenAI to create a summary automatically. Please wait for it to finish.
+                </p>
+            {% endif %}
+
+            <button class="button">{{ button }} →</button>
+        </form>
+    </section>
+    {% if upload %}
+        <script>
+            document.getElementById('lecture-upload').addEventListener('submit', function () {
+                const button = this.querySelector('button');
+                button.disabled = true;
+                button.textContent = 'Uploading and preparing summary…';
+            });
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="heading">
+        <div>
+            <div class="eyebrow">YOUR DAILY MOMENTUM</div>
+            <h1>Let's make progress, {{ user.username }}.</h1>
+            <p class="muted">A little focus today. A lot more confidence on exam day.</p>
+        </div>
+
+        <a class="button" href="{% url 'course_create' %}">＋ Add course</a>
+    </div>
+
+    <section class="hero">
+        <div>
+            <span class="pill">BUILT AROUND YOUR FINALS</span>
+            <h2>
+                Ten minutes today.<br>
+                One less worry tomorrow.
+            </h2>
+            <p>
+                Your lectures become a daily plan.<br>
+                Start a quiz from your course below.
+            </p>
+        </div>
+
+        <div class="orbit">
+            <div>
+                <strong>10</strong>
+                <span>MINUTES A DAY</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="stats">
+        <div class="stat">
+            <span>Current streak</span>
+            <strong>{{ streak }} <small>days</small></strong>
+            <p>Keep showing up for yourself</p>
+        </div>
+
+        <div class="stat">
+            <span>Answer accuracy</span>
+            <strong>{{ accuracy }}<small>%</small></strong>
+            <p>Across completed sessions</p>
+        </div>
+
+        <div class="stat">
+            <span>Sessions completed</span>
+            <strong>{{ completed }}</strong>
+            <p>Every session moves you forward</p>
+        </div>
+    </div>
+
+    <div class="section-heading">
+        <h2>
+            Your courses
+            <span class="count">{{ courses|length }}</span>
+        </h2>
+        <span class="muted">Ordered by your next final</span>
+    </div>
+
+    <div class="course-grid">
+        {% for item in courses %}
+            <article class="panel course-card">
+                <div class="card-top">
+                    <span class="course-icon">{{ item.course.name|slice:':1' }}</span>
+                    <span class="pill">{{ item.course.days_left }} days to go</span>
+                </div>
+
+                <h2>
+                    <a href="{% url 'course_detail' item.course.pk %}">
+                        {{ item.course.name }}
+                    </a>
+                </h2>
+                <p class="muted">Final · {{ item.course.exam_date|date:'M j, Y' }}</p>
+
+                <div class="progress-label">
+                    <span>Readiness estimate</span>
+                    <strong>{{ item.readiness }}%</strong>
+                </div>
+                <progress max="100" value="{{ item.readiness }}">{{ item.readiness }}%</progress>
+
+                <div class="card-bottom">
+                    <span>{{ item.questions }} questions · {{ item.course.daily_minutes }} min/day</span>
+                    <a href="{% url 'course_detail' item.course.pk %}">Open course →</a>
+                </div>
+            </article>
+        {% empty %}
+            <section class="panel empty">
+                <h2>Your first step starts here.</h2>
+                <p>Create a course and upload your lectures, or explore a ready-to-use demo.</p>
+
+                <div class="actions">
+                    <a class="button" href="{% url 'course_create' %}">Create a course</a>
+
+                    <form method="post" action="{% url 'demo' %}">
+                        {% csrf_token %}
+                        <button class="button secondary">Try demo course</button>
+                    </form>
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+
+    {% if history %}
+        <section class="panel history">
+            <h2>Recent study sessions</h2>
+
+            {% for session in history %}
+                <a class="history-row" href="{% url 'quiz' session.pk %}">
+                    <span>
+                        <strong>{{ session.course.name }}</strong>
+                        <small>
+                            {{ session.get_kind_display }} · {{ session.completed_at|date:'M j' }}
+                        </small>
+                    </span>
+                    <strong>{{ session.score }}% →</strong>
+                </a>
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}

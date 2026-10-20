@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="auth">
+        <div class="eyebrow">WELCOME BACK</div>
+
+        <h1>
+            Your future self<br>
+            will thank you.
+        </h1>
+
+        <p class="muted">A focused study session is all it takes to get started.</p>
+
+        <section class="panel">
+            <h2>Sign in to FinalReady</h2>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="hidden" name="next" value="{{ next }}">
+                <button class="button">Sign in →</button>
+            </form>
+
+            <p>
+                New here?
+                <a href="{% url 'signup' %}">Create an account</a>
+            </p>
+        </section>
+    </div>
+{% endblock %}

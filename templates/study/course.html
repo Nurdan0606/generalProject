@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a class="back" href="{% url 'dashboard' %}">← All courses</a>
+
+    <div class="heading">
+        <div>
+            <div class="eyebrow">{{ course.days_left }} DAYS UNTIL YOUR FINAL</div>
+            <h1>{{ course.name }}</h1>
+            <p class="muted">
+                Final on {{ course.exam_date|date:'F j, Y' }} ·
+                {{ course.daily_minutes }} minutes a day
+            </p>
+        </div>
+
+        <a class="button secondary" href="{% url 'course_edit' course.pk %}">
+            Edit course
+        </a>
+    </div>
+
+    <section class="hero compact">
+        <div>
+            <span class="pill">YOUR NEXT SMALL STEP</span>
+            <h2>Make today count.</h2>
+            <p>Due questions and weaker topics come first.</p>
+
+            <div class="actions">
+                <form method="post" action="{% url 'start' course.pk 'daily' %}">
+                    {% csrf_token %}
+                    <button class="button light">Start / resume daily quiz →</button>
+                </form>
+
+                <form method="post" action="{% url 'start' course.pk 'weekly' %}">
+                    {% csrf_token %}
+                    <button class="button ghost">Weekly review</button>
+                </form>
+            </div>
+
+            <p class="hero-caption">
+                Daily: up to {{ course.daily_minutes }} min estimated. Weekly: up to 20 min.
+            </p>
+        </div>
+
+        <div class="readiness">
+            <strong>{{ stats.readiness }}%</strong>
+            <span>READINESS ESTIMATE</span>
+        </div>
+    </section>
+
+    <div class="two-columns">
+        <section class="panel">
+            <div class="section-heading">
+                <h2>Lecture library</h2>
+                <a href="{% url 'upload' course.pk %}">＋ Add lecture</a>
+            </div>
+
+            {% if not ai_enabled %}
+                <p class="notice">
+                    AI generation needs an API key. The demo question bank works without one.
+                </p>
+            {% endif %}
+
+            {% for lecture in lectures %}
+                <div class="lecture">
+                    <div class="lecture-details">
+                        <div class="lecture-heading">
+                            <strong>{{ lecture.title }}</strong>
+                            {% if lecture.generated %}
+                                <span class="pill">{{ lecture.questions.count }} questions ready</span>
+                            {% endif %}
+                        </div>
+                        <small>
+                            <a href="{% url 'lecture_open' lecture.pk %}" download>
+                                {{ lecture.original_name }}
+                            </a>
+                            {% if not lecture.file %}
+                                <span>(saved text only; upload again to retain the original)</span>
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <div class="lecture-actions">
+                        <a class="button secondary small" href="{% url 'lecture_summary' lecture.pk %}">
+                            AI summary
+                        </a>
+                        {% if not lecture.generated %}
+                            <form method="post" action="{% url 'generate' lecture.pk %}">
+                                {% csrf_token %}
+                                <button class="button small">Generate questions</button>
+                            </form>
+                        {% endif %}
+                        <form class="lecture-delete" method="post" action="{% url 'lecture_delete' lecture.pk %}">
+                            {% csrf_token %}
+                            <button class="button secondary small delete-button" type="submit">Delete lecture</button>
+                        </form>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="muted">
+                    Upload a PDF or DOCX lecture to start building your question bank.
+                </p>
+            {% endfor %}
+
+            <p class="muted fine">
+                Uploading a lecture automatically sends its extracted text to OpenAI for a summary.
+                Review AI answers against your notes.
+            </p>
+        </section>
+
+        <section class="panel">
+            <h2>Your topic map</h2>
+            <p class="muted">Weakest topics first. Repeated correct answers build mastery.</p>
+
+            {% for topic in topics %}
+                <div class="topic">
+                    <div class="progress-label">
+                        <span>{{ topic.name }}</span>
+                        <strong>{{ topic.mastery|default:0|floatformat:0 }}%</strong>
+                    </div>
+                    <progress
+                        value="{{ topic.mastery|default:0|floatformat:0 }}"
+                        max="100"
+                    ></progress>
+                </div>
+            {% empty %}
+                <p class="muted">Topics will appear after question generation.</p>
+            {% endfor %}
+        </section>
+    </div>
+{% endblock %}
